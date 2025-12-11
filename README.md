@@ -1,9 +1,13 @@
 # LlamaForge 🛠️
 ### The Ultimate Command Center for Local LLMs
 
-![LlamaForge Banner](https://img.shields.io/badge/Status-Beta%20V0.1a-blue?style=for-the-badge) ![Python](https://img.shields.io/badge/Made%20with-Python-blue?style=for-the-badge) ![Platform](https://img.shields.io/badge/Platform-Windows-blueviolet?style=for-the-badge)
+![LlamaForge Banner](banner.png)
+
+![Status](https://img.shields.io/badge/Status-Beta%20V0.1a-blue?style=for-the-badge) ![Python](https://img.shields.io/badge/Made%20with-Python-blue?style=for-the-badge) ![Platform](https://img.shields.io/badge/Platform-Windows-blueviolet?style=for-the-badge)
 
 **Stop wrestling with command-line flags. Start forging intelligence.**
+
+![LlamaForge Showcase](Showcase.png)
 
 LlamaForge is a professional-grade Graphical User Interface (GUI) for [llama.cpp](https://github.com/ggerganov/llama.cpp). It transforms the complex process of running local Large Language Models (LLMs) into a streamlined, point-and-click experience without sacrificing the power-user controls you need.
 
