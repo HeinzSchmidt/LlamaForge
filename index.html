@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LlamaForge Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <nav class="border-b border-slate-700 p-4 bg-slate-800">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-orange-500">🔥 LlamaForge</h1>
+            <div id="status-badge" class="px-3 py-1 rounded-full text-xs bg-slate-700">Idle</div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Configuration Panel -->
+        <section class="lg:col-span-1 space-y-6">
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl">
+                <h2 class="text-xl font-semibold mb-4">Training Config</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Base Model</label>
+                        <select id="model-select" class="w-full bg-slate-700 border border-slate-600 rounded p-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                            <option>Loading models...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Epochs</label>
+                        <input type="number" id="epochs" value="3" class="w-full bg-slate-700 border border-slate-600 rounded p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">Learning Rate</label>
+                        <input type="text" id="lr" value="2e-4" class="w-full bg-slate-700 border border-slate-600 rounded p-2">
+                    </div>
+                    <div class="pt-4 flex gap-2">
+                        <button onclick="startTraining()" class="flex-1 bg-orange-600 hover:bg-orange-700 transition font-bold py-2 rounded">Start Forge</button>
+                        <button onclick="stopTraining()" class="bg-red-600 hover:bg-red-700 px-4 rounded">Stop</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logs Panel -->
+        <section class="lg:col-span-2">
+            <div class="bg-black rounded-xl border border-slate-700 h-[600px] flex flex-col shadow-2xl">
+                <div class="p-3 border-b border-slate-800 flex justify-between items-center bg-slate-900 rounded-t-xl">
+                    <span class="text-xs font-mono text-slate-500 uppercase tracking-widest">Process Output</span>
+                    <button onclick="clearLogs()" class="text-xs text-slate-500 hover:text-white">Clear</button>
+                </div>
+                <div id="log-container" class="p-4 font-mono text-sm overflow-y-auto flex-grow space-y-1">
+                    <div class="text-blue-400">> System ready. Awaiting instructions...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const socket = io();
+        const logContainer = document.getElementById('log-container');
+        const statusBadge = document.getElementById('status-badge');
+
+        socket.on('log_update', function(msg) {
+            const div = document.createElement('div');
+            div.className = "text-slate-300";
+            div.textContent = msg.data;
+            logContainer.appendChild(div);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            if (msg.data.includes('Starting')) {
+                statusBadge.textContent = "Training...";
+                statusBadge.className = "px-3 py-1 rounded-full text-xs bg-orange-900 text-orange-200 animate-pulse";
+            }
+            if (msg.data.includes('Finished')) {
+                statusBadge.textContent = "Idle";
+                statusBadge.className = "px-3 py-1 rounded-full text-xs bg-slate-700";
+            }
+        });
+
+        async function loadModels() {
+            const res = await fetch('/api/models');
+            const data = await res.json();
+            const select = document.getElementById('model-select');
+            select.innerHTML = data.models.map(m => `<option value="${m}">${m}</option>`).join('');
+        }
+
+        async function startTraining() {
+            const body = {
+                model: document.getElementById('model-select').value,
+                epochs: document.getElementById('epochs').value,
+                lr: document.getElementById('lr').value
+            };
+            const res = await fetch('/api/train', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const result = await res.json();
+            if (result.error) alert(result.error);
+        }
+
+        async function stopTraining() {
+            await fetch('/api/stop', { method: 'POST' });
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = '';
+        }
+
+        loadModels();
+    </script>
+</body>
+</html>
+
